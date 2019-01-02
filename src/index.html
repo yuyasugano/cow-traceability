@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Cow Breeding Front-end</title>
+    <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@1.0.0-beta.36/dist/web3.min.js" integrity="sha256-nWBTbvxhJgjslRyuAKJHK+XcZPlCnmIAAMixz6EefVk=" crossorigin="anonymous"></script>
+    <script language="javascript" type="text/javascript" src="cowbreeding_abi.js"></script>
+  </head>
+  <body>
+    <div id="txStatus"></div>
+    <div id="cows"></div>
+    <form name="cowform" id="cowform">
+      <input type="text" name="id" value="" maxlength="10">
+      <input type="text" name="types" value="BrownSwiss">
+      <input type="text" name="sex" value="Female">
+      <input type="submit" name="btn" id="btn" value="submit">
+    </form>
+
+    <script>
+      var cowBreeding;
+      var userAccount;
+      var userAccounts = [];
+
+      function startApp() {
+        var cowBreedingAddress = "CONTRACT ADDRESS";
+        cowBreeding = new web3.eth.Contract(cowBreedingABI, cowBreedingAddress);
+
+        var accountInterval = setInterval(function() {
+          // Check if the account has changed
+          if (web3.eth.accounts[0] !== userAccount) {
+            web3.eth.getAccounts(function(error, data) {
+              for (x in data) {
+                userAccounts.push(data[x]);
+              }
+            });
+
+            userAccount = userAccounts[0];
+            // Call a function to update the UI
+            getCowsByOwner(userAccount).then(displayCows); 
+          }
+        }, 100);
+
+        $('form').submit(function() {
+          var id    = $('input:text[name="id"]').val();
+          var types = $('input:text[name="types"]').val();
+          var sex   = $('input:text[name="sex"]').val();
+          cowBirth(id, types, sex);
+        });
+
+        cowBreeding.events.CowBirth()
+        .on("data", function(event) {
+          let cow = event.returnValues;
+          console.log("A new cow was born!", cow.cowNum, cow.MomNum, cow.types, cow.sex);
+        }).on("error", console.error);
+      }
+
+      function displayCows(ids) {
+        $("#cows").empty();
+        for (id of ids) {
+          // Look up cow details from the contract.
+          getCowDetails(id).then(function(cow) {
+            // Using ES6's "template literals" to inject variables into the HTML.
+            // Append each one to our #cows div
+            $("#cows").append(`<div class="cow">
+              <ul>
+                <li>CowNumber: ${cow.cowNum}</li>
+                <li>MomNumber: ${cow.momNum}</li>
+                <li>BirthDate: ${cow.birthDate}</li>
+                <li>Type: ${cow.types}</li>
+                <li>Sex: ${cow.sex}</li>
+              </ul>
+            </div>`);
+          });
+        }
+      }
+
+      function cowBirth(id, types, sex) {
+        $("#txStatus").text("Breeding new cow on the blockchain. This may take a while...");
+        // Send the tx to our contract:
+        return cowBreeding.methods.cowBirth(id, types, sex).send({ from: userAccount })
+        .on("receipt", function(receipt) {
+          $("#txStatus").text("Succesfully created " + types + "!");
+          // Transaction was accepted into the blockchain, redraw the UI
+        })
+        .on("error", function(error) {
+          $("#txStatus").text(error);
+        }); 
+      }
+
+      function getCowDetails(cowNum) {
+        return cowBreeding.methods.cows(cowNum).call();
+      }
+
+      function cowToOwner(cowNum) {
+        return cowBreeding.methods.cowToOwner(cowNum).call();
+      }
+
+      function getCowsByOwner(owner) {
+        return cowBreeding.methods.getCowsByOwner(owner).call();
+      }
+
+      function getCountByOwner(owner) {
+        return cowBreeding.methods.getCountByOwner(owner).call();
+      }
+
+      function getOwnerbyCow(cowNum) {
+        return cowBreeding.methods.getOwnerByCow(cowNum).call();
+      }
+
+      window.addEventListener('load', async () => {
+
+        // Checking if Web3 has been injected by the browser (Mist/MetaMask)
+        if (window.ethereum) {
+          window.web3 = new Web3(ethereum);
+          try {
+            // Request account access if needed
+            await ethereum.enable();
+          } catch (error) {
+            // User denied account access
+          }
+        } else if (window.web3) {
+          // Use Mist/MetaMask provider
+          window.web3 = new Web3(web3.currentProvider);
+        } else {
+          // Handle the case where the user doesn't have Non-Ethereum installed
+          console.log('No web3? You should consider trying MetaMask!');
+        }
+
+        // Now you can start your app & access web3 freely
+        startApp()
+      })
+    </script>
+  </body>
+</html>
+
