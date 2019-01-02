@@ -22,20 +22,20 @@ Ganache CLI v6.2.5 (ganache-core: 2.3.3)
 ## Contracts
 `CowBreeding` contract is a test solidity code for cow-traceability with functions defined below: cowBirth is a public function for farmers to issue a transaction of a cow while _cowBirth is an internal function which can be called from the front-facing cowBirth function. getCowsByOnwer is to get owner's cow details by looking up an owner's address. getCountByOwner is a function to get a total number of owned cows by that owner's address. At last getOnwerbyCow is a look-up function for public to search a cow's owner from a unique cow identity number.
 
-function _cowBirth(uint _cowNum, uint _cowMom, string _types, string _sex) internal {}
-function cowBirth(uint _cowMom, string _types, string _sex) public {}
-function getCowsByOwner(address _owner) external ownerOf(_owner) view returns(uint[]) {}
-function getCountByOwner(address _owner) external ownerOf(_owner) view returns (uint) {}
+function _cowBirth(uint _cowNum, uint _cowMom, string _types, string _sex) internal {}  
+function cowBirth(uint _cowMom, string _types, string _sex) public {}  
+function getCowsByOwner(address _owner) external ownerOf(_owner) view returns(uint[]) {}  
+function getCountByOwner(address _owner) external ownerOf(_owner) view returns (uint) {}  
 function getOwnerbyCow(uint _cowNum) public view returns (address) {}
 
 A cow is given in an array of structure as below:
 
-struct Cow {
-  uint cowNum;
-  uint cowMom;
-  uint birthDate;
-  string types;
-  string sex;
+struct Cow {  
+  uint cowNum;  
+  uint cowMom;  
+  uint birthDate;  
+  string types;  
+  string sex;  
 }
 
 ## To Migrate:
