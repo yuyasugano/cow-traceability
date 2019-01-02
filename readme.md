@@ -1,4 +1,4 @@
-# Reentrancy
+# Cow Traceability
 A demo cow-traceability application v1.01
 
 # Requirements
