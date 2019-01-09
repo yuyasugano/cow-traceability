@@ -110,7 +110,7 @@
 
       window.addEventListener('load', async () => {
 
-        // Checking if Web3 has been injected by the browser (Mist/MetaMask)
+        // Modern dapp browsers
         if (window.ethereum) {
           window.web3 = new Web3(ethereum);
           try {
@@ -119,11 +119,12 @@
           } catch (error) {
             // User denied account access
           }
+        // Legacy dapp browsers
         } else if (window.web3) {
           // Use Mist/MetaMask provider
           window.web3 = new Web3(web3.currentProvider);
+        // Non-dapp browsers
         } else {
-          // Handle the case where the user doesn't have Non-Ethereum installed
           console.log('No web3? You should consider trying MetaMask!');
         }
 
