@@ -55,7 +55,6 @@ contract CowBreeding is Ownable {
 
   /**
    * @dev Gives birth of a cow with variables
-   * @param _cowNum new cow identity number
    * @param _cowMom new cow's mother identity number
    * @param _types new cow's type such as BrownSwiss
    * @param _sex new cow's sex male or female

@@ -24,7 +24,7 @@ contract CowOwnership is CowBreeding, ERC721 {
 
   /**
    * @dev Gets the balance of the specified address
-   * @param owner address to query the balance of
+   * @param _owner address to query the balance of
    * @return uint256 representing the amount owned by the passed address
    */
   function balanceOf(address _owner) public view returns (uint256 _balance) {
@@ -34,7 +34,7 @@ contract CowOwnership is CowBreeding, ERC721 {
 
   /**
    * @dev Gets the owner of the specified token ID
-   * @param tokenId uint256 ID of the token to query the owner of
+   * @param _tokenId uint256 ID of the token to query the owner of
    * @return owner address currently marked as the owner of the given token ID
    */
   function ownerOf(uint256 _tokenId) public view returns (address _owner) {
@@ -48,8 +48,8 @@ contract CowOwnership is CowBreeding, ERC721 {
    * The zero address indicates there is no approved address.
    * There can only be one approved address per token at a given time.
    * Can only be called by the token owner or an approved operator.
-   * @param to address to be approved for the given token ID
-   * @param tokenId uint256 ID of the token to be approved
+   * @param _to address to be approved for the given token ID
+   * @param _tokenId uint256 ID of the token to be approved
    */
   function approve(address _to, uint256 _tokenId) public {
     address owner = ownerOf(_tokenId);
@@ -63,7 +63,7 @@ contract CowOwnership is CowBreeding, ERC721 {
   /**
    * @dev Gets the approved address for a token ID, or zero if no address set
    * Reverts if the token ID does not exist.
-   * @param tokenId uint256 ID of the token to query the approval of
+   * @param _tokenId uint256 ID of the token to query the approval of
    * @return address currently approved for the given token ID
    */
   function getApproved(uint256 _tokenId) public view returns (address operator) {
@@ -74,8 +74,8 @@ contract CowOwnership is CowBreeding, ERC721 {
   /**
    * @dev Sets or unsets the approval of a given operator
    * An operator is allowed to transfer all tokens of the sender on their behalf
-   * @param to operator address to set the approval
-   * @param approved representing the status of the approval to be set
+   * @param _operator address to set the approval
+   * @param _approved representing the status of the approval to be set
    */
   function setApprovalForAll(address _operator, bool _approved) public {
     require(_operator != msg.sender);
@@ -85,8 +85,8 @@ contract CowOwnership is CowBreeding, ERC721 {
 
   /**
    * @dev Tells whether an operator is approved by a given owner
-   * @param owner owner address which you want to query the approval of
-   * @param operator operator address which you want to query the approval of
+   * @param _owner owner address which you want to query the approval of
+   * @param _operator operator address which you want to query the approval of
    * @return bool whether the given operator is approved by the given owner
    */
   function isApprovedForAll(address _owner, address _operator) public view returns (bool) {
@@ -97,9 +97,9 @@ contract CowOwnership is CowBreeding, ERC721 {
    * @dev Transfers the ownership of a given token ID to another address
    * Usage of this method is discouraged, use `safeTransferFrom` whenever possible
    * Requires the msg sender to be the owner, approved, or operator
-   * @param from current owner of the token
-   * @param to address to receive the ownership of the given token ID
-   * @param tokenId uint256 ID of the token to be transferred
+   * @param _from current owner of the token
+   * @param _to address to receive the ownership of the given token ID
+   * @param _tokenId uint256 ID of the token to be transferred
    */
   function transferFrom(address _from, address _to, uint256 _tokenId) public {
     require(_isApprovedOrOwner(msg.sender, _tokenId));
@@ -114,9 +114,9 @@ contract CowOwnership is CowBreeding, ERC721 {
    * the transfer is reverted.
    *
    * Requires the msg sender to be the owner, approved, or operator
-   * @param from current owner of the token
-   * @param to address to receive the ownership of the given token ID
-   * @param tokenId uint256 ID of the token to be transferred
+   * @param _from current owner of the token
+   * @param _to address to receive the ownership of the given token ID
+   * @param _tokenId uint256 ID of the token to be transferred
    */
   function safeTransferFrom(address _from, address _to, uint256 _tokenId) public {
     safeTransferFrom(_from, _to, _tokenId, "");
@@ -129,9 +129,9 @@ contract CowOwnership is CowBreeding, ERC721 {
    * `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`; otherwise,
    * the transfer is reverted.
    * Requires the msg sender to be the owner, approved, or operator
-   * @param from current owner of the token
-   * @param to address to receive the ownership of the given token ID
-   * @param tokenId uint256 ID of the token to be transferred
+   * @param _from current owner of the token
+   * @param _to address to receive the ownership of the given token ID
+   * @param _tokenId uint256 ID of the token to be transferred
    * @param _data bytes data to send along with a safe transfer check
    */
   function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes _data) public {
@@ -141,7 +141,7 @@ contract CowOwnership is CowBreeding, ERC721 {
 
   /**
    * @dev Returns whether the specified token exists
-   * @param tokenId uint256 ID of the token to query the existence of
+   * @param _tokenId uint256 ID of the token to query the existence of
    * @return whether the token exists
    */
   function _exists(uint256 _tokenId) internal view returns (bool) {
@@ -151,8 +151,8 @@ contract CowOwnership is CowBreeding, ERC721 {
 
   /**
    * @dev Returns whether the given spender can transfer a given token ID
-   * @param spender address of the spender to query
-   * @param tokenId uint256 ID of the token to be transferred
+   * @param _spender address of the spender to query
+   * @param _tokenId uint256 ID of the token to be transferred
    * @return bool whether the msg.sender is approved for the given token ID,
    *    is an operator of the owner, or is the owner of the token
    */
@@ -164,9 +164,9 @@ contract CowOwnership is CowBreeding, ERC721 {
   /**
    * @dev Internal function to transfer ownership of a given token ID to another address.
    * As opposed to transferFrom, this imposes no restrictions on msg.sender.
-   * @param from current owner of the token
-   * @param to address to receive the ownership of the given token ID
-   * @param tokenId uint256 ID of the token to be transferred
+   * @param _from current owner of the token
+   * @param _to address to receive the ownership of the given token ID
+   * @param _tokenId uint256 ID of the token to be transferred
    */
   function _transferFrom(address _from, address _to, uint256 _tokenId) internal {
     require(ownerOf(_tokenId) ==_from);
@@ -184,7 +184,7 @@ contract CowOwnership is CowBreeding, ERC721 {
 
   /**
    * @dev Private function to clear current approval of a given token ID
-   * @param tokenId uint256 ID of the token to be transferred
+   * @param _tokenId uint256 ID of the token to be transferred
    */
   function _clearApproval(uint256 _tokenId) private {
     if (_tokenApprovals[_tokenId] != address(0)) {
@@ -195,13 +195,13 @@ contract CowOwnership is CowBreeding, ERC721 {
   /**
    * @dev Internal function to invoke `onERC721Received` on a target address
    * The call is not executed if the target address is not a contract
-   * @param from address representing the previous owner of the given token ID
-   * @param to target address that will receive the tokens
-   * @param tokenId uint256 ID of the token to be transferred
+   * @param _from address representing the previous owner of the given token ID
+   * @param _to target address that will receive the tokens
+   * @param _tokenId uint256 ID of the token to be transferred
    * @param _data bytes optional data to send along with the call
    * @return whether the call correctly returned the expected magic value
    */
-  function _checkOnERC721Received(address _from, address _to, uint256 _tokenID, bytes _data) internal returns (bool) {
+  function _checkOnERC721Received(address _from, address _to, uint256 _tokenId, bytes _data) internal returns (bool) {
     if (!_to.isContract()) {
       return true;
     }
