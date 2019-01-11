@@ -23,7 +23,7 @@
       var userAccounts = [];
 
       function startApp() {
-        var cowBreedingAddress = "CONTRACT ADDRESS";
+        var cowBreedingAddress = "YOUR CONTRACT ADDRESS";
         cowBreeding = new web3.eth.Contract(cowBreedingABI, cowBreedingAddress);
 
         var accountInterval = setInterval(function() {
@@ -51,26 +51,30 @@
         cowBreeding.events.CowBirth()
         .on("data", function(event) {
           let cow = event.returnValues;
-          console.log("A new cow was born!", cow.cowNum, cow.MomNum, cow.types, cow.sex);
+          console.log("A new cow was born!", cow.cowNum, cow.cowMom, cow.types, cow.sex);
         }).on("error", console.error);
       }
 
       function displayCows(ids) {
         $("#cows").empty();
-        for (id of ids) {
+        for (i = 0; i < ids.length; i++) {
+          console.log(ids[i]);
+
           // Look up cow details from the contract.
-          getCowDetails(id).then(function(cow) {
-            // Using ES6's "template literals" to inject variables into the HTML.
-            // Append each one to our #cows div
-            $("#cows").append(`<div class="cow">
-              <ul>
-                <li>CowNumber: ${cow.cowNum}</li>
-                <li>MomNumber: ${cow.momNum}</li>
-                <li>BirthDate: ${cow.birthDate}</li>
-                <li>Type: ${cow.types}</li>
-                <li>Sex: ${cow.sex}</li>
-              </ul>
-            </div>`);
+          getIdByCowNum(ids[i]).then(function(event) {
+            getCowDetails(event).then(function(cow) {
+              // Using ES6's "template literals" to inject variables into the HTML.
+              // Append each one to our #cows div
+              $("#cows").append(`<div class="cow">
+                <ul>
+                  <li>CowNumber: ${cow.cowNum}</li>
+                  <li>MomNumber: ${cow.cowMom}</li>
+                  <li>BirthDate: ${cow.birthDate}</li>
+                  <li>Type: ${cow.types}</li>
+                  <li>Sex: ${cow.sex}</li>
+                </ul>
+              </div>`);
+            });
           });
         }
       }
@@ -90,6 +94,10 @@
 
       function getCowDetails(cowNum) {
         return cowBreeding.methods.cows(cowNum).call();
+      }
+
+      function getIdByCowNum(cowNum) {
+        return cowBreeding.methods.getIdByCowNum(cowNum).call();
       }
 
       function cowToOwner(cowNum) {
@@ -129,7 +137,7 @@
         }
 
         // Now you can start your app & access web3 freely
-        startApp()
+        startApp();
       })
     </script>
   </body>

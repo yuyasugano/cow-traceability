@@ -33,6 +33,9 @@ contract CowBreeding is Ownable {
   // Mapping from token ID to number of cows
   mapping (uint => uint) idToCowNum;
 
+  // Mapping from number of cows to token ID
+  mapping (uint => uint) cowNumToId;
+
   modifier onlyOwnerOf(address _ownerOf) {
     require(msg.sender == _ownerOf);
     _;
@@ -48,6 +51,7 @@ contract CowBreeding is Ownable {
   function _cowBirth(uint _cowNum, uint _cowMom, string _types, string _sex) internal {
     uint id = cows.push(Cow(_cowNum, _cowMom, block.timestamp, _types, _sex)) - 1;
     idToCowNum[id] = _cowNum;
+    cowNumToId[_cowNum] = id;
     cowToOwner[_cowNum] = msg.sender;
     ownerCowCount[msg.sender] = ownerCowCount[msg.sender].add(1);
     emit CowBirth(_cowNum, _cowMom, _types, _sex);
@@ -70,7 +74,7 @@ contract CowBreeding is Ownable {
    * @param _owner cow owner address
    * @return uint array of cow structs
    */
-  function getCowsByOwner(address _owner) external onlyOwnerOf(_owner) view returns (uint[]) {
+  function getCowsByOwner(address _owner) external view returns (uint[]) {
     uint[] memory cowsByOwner = new uint[](ownerCowCount[_owner]);
     uint counter = 0;
     uint number;
@@ -89,10 +93,19 @@ contract CowBreeding is Ownable {
    * @param _owner cow owner address
    * @return uint of cow counts of the owner
    */
-  function getCountByOwner(address _owner) external onlyOwnerOf(_owner) view returns (uint) {
+  function getCountByOwner(address _owner) external view returns (uint) {
     return ownerCowCount[_owner]; 
   }
 
+  /**
+   * @dev Gets number of cows from the cow id
+   * @param _cowNum cow identity number
+   * @return uint of cow id
+   */
+  function getIdByCowNum(uint _cowNum) external view returns (uint) {
+    return cowNumToId[_cowNum];
+  }
+ 
   /**
    * @dev Gets an owner address from a cow identity number
    * @param _cowNum cow identity number
