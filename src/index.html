@@ -2,144 +2,80 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>Cow Breeding Front-end</title>
-    <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@1.0.0-beta.36/dist/web3.min.js" integrity="sha256-nWBTbvxhJgjslRyuAKJHK+XcZPlCnmIAAMixz6EefVk=" crossorigin="anonymous"></script>
-    <script language="javascript" type="text/javascript" src="cowbreeding_abi.js"></script>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cow Exchange Market Front-end</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
   </head>
   <body>
-    <div id="txStatus"></div>
-    <div id="cows"></div>
-    <form name="cowform" id="cowform">
-      <input type="text" name="id" value="" maxlength="10">
-      <input type="text" name="types" value="BrownSwiss">
-      <input type="text" name="sex" value="Female">
-      <input type="submit" name="btn" id="btn" value="submit">
-    </form>
 
-    <script>
-      var cowBreeding;
-      var userAccount;
-      var userAccounts = [];
+    <div class="jumbotron jumbotron-fluid">
+      <div class="container">
+        <h2 class="display-3">Cow Exchange Market</h2>
+        <p class="lead">Simple exchange application for cow market.</p>
+        <hr class="mh-4">
+        <a class="btn btn-primary btn-lg" href="https://github.com/yuyasugano/cow-traceability" role="button" target="_blank">Github</a>
+      </div>
+    </div>
 
-      function startApp() {
-        var cowBreedingAddress = "YOUR CONTRACT ADDRESS";
-        cowBreeding = new web3.eth.Contract(cowBreedingABI, cowBreedingAddress);
+    <div class="container">
+      <div id="txStatus" class="alert alert-info" style="display: none;"></div>
 
-        var accountInterval = setInterval(function() {
-          // Check if the account has changed
-          if (web3.eth.accounts[0] !== userAccount) {
-            web3.eth.getAccounts(function(error, data) {
-              for (x in data) {
-                userAccounts.push(data[x]);
-              }
-            });
+      <div id="cows">
+        <div class="row">
+        <!-- COWS LOAD HERE -->
+        </div>
+      </div>
 
-            userAccount = userAccounts[0];
-            // Call a function to update the UI
-            getCowsByOwner(userAccount).then(displayCows); 
-          }
-        }, 100);
+      <form>
+        <div class="form-group row">
+          <label class="col-sm-2 col-form-label">ID</label>
+          <div class="col-sm-10">
+            <input type="text" name="id" class="form-control">
+          </div>
+        </div>
 
-        $('form').submit(function() {
-          var id    = $('input:text[name="id"]').val();
-          var types = $('input:text[name="types"]').val();
-          var sex   = $('input:text[name="sex"]').val();
-          cowBirth(id, types, sex);
-        });
+        <div class="form-group row">
+          <label class="col-sm-2 col-form-label">TYPE</label>
+          <div class="col-sm-10">
+            <input type="text" name="type" class="form-control">
+          </div>
+        </div>
 
-        cowBreeding.events.CowBirth()
-        .on("data", function(event) {
-          let cow = event.returnValues;
-          console.log("A new cow was born!", cow.cowNum, cow.cowMom, cow.types, cow.sex);
-        }).on("error", console.error);
-      }
+        <div class="form-group row">
+          <label class="col-sm-2 col-form-label">SEX</label>
+          <div class="col-sm-10">
+            <input type="text" name="sex" class="form-control">
+          </div>
+        </div>
 
-      function displayCows(ids) {
-        $("#cows").empty();
-        for (i = 0; i < ids.length; i++) {
-          console.log(ids[i]);
+        <div class="form-group row">
+          <div class="offset-sm-2 col-sm-10">
+            <button class="btn btn-submit" type="submit">Submit</button>
+          </div>
+        </div>
+      </form>
+    </div>
 
-          // Look up cow details from the contract.
-          getIdByCowNum(ids[i]).then(function(event) {
-            getCowDetails(event).then(function(cow) {
-              // Using ES6's "template literals" to inject variables into the HTML.
-              // Append each one to our #cows div
-              $("#cows").append(`<div class="cow">
-                <ul>
-                  <li>CowNumber: ${cow.cowNum}</li>
-                  <li>MomNumber: ${cow.cowMom}</li>
-                  <li>BirthDate: ${cow.birthDate}</li>
-                  <li>Type: ${cow.types}</li>
-                  <li>Sex: ${cow.sex}</li>
-                </ul>
-              </div>`);
-            });
-          });
-        }
-      }
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 
-      function cowBirth(id, types, sex) {
-        $("#txStatus").text("Breeding new cow on the blockchain. This may take a while...");
-        // Send the tx to our contract:
-        return cowBreeding.methods.cowBirth(id, types, sex).send({ from: userAccount })
-        .on("receipt", function(receipt) {
-          $("#txStatus").text("Succesfully created " + types + "!");
-          // Transaction was accepted into the blockchain, redraw the UI
-        })
-        .on("error", function(error) {
-          $("#txStatus").text(error);
-        }); 
-      }
-
-      function getCowDetails(cowNum) {
-        return cowBreeding.methods.cows(cowNum).call();
-      }
-
-      function getIdByCowNum(cowNum) {
-        return cowBreeding.methods.getIdByCowNum(cowNum).call();
-      }
-
-      function cowToOwner(cowNum) {
-        return cowBreeding.methods.cowToOwner(cowNum).call();
-      }
-
-      function getCowsByOwner(owner) {
-        return cowBreeding.methods.getCowsByOwner(owner).call();
-      }
-
-      function getCountByOwner(owner) {
-        return cowBreeding.methods.getCountByOwner(owner).call();
-      }
-
-      function getOwnerbyCow(cowNum) {
-        return cowBreeding.methods.getOwnerByCow(cowNum).call();
-      }
-
-      window.addEventListener('load', async () => {
-
-        // Modern dapp browsers
-        if (window.ethereum) {
-          window.web3 = new Web3(ethereum);
-          try {
-            // Request account access if needed
-            await ethereum.enable();
-          } catch (error) {
-            // User denied account access
-          }
-        // Legacy dapp browsers
-        } else if (window.web3) {
-          // Use Mist/MetaMask provider
-          window.web3 = new Web3(web3.currentProvider);
-        // Non-dapp browsers
-        } else {
-          console.log('No web3? You should consider trying MetaMask!');
-        }
-
-        // Now you can start your app & access web3 freely
-        startApp();
-      })
-    </script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/web3.min.js"></script>
+    <script src="js/truffle-contract.js"></script>
+    <script src="js/app.js"></script>
   </body>
 </html>
 

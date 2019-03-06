@@ -10,7 +10,7 @@ import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
 contract CowBreeding is Ownable {
 
   using SafeMath for uint256;
-  event CowBirth(uint cowNumber, uint momNumber, string cowType, string cowSex);
+  event Breeding(uint tokenId, string cowType, string cowSex);
 
   uint cowDigits = 10;
   uint cowModulus = 10 ** cowDigits;
@@ -24,6 +24,7 @@ contract CowBreeding is Ownable {
   }
 
   Cow[] public cows;
+
   // Mapping from cow ID to owner
   mapping (uint => address) public cowToOwner;
 
@@ -54,7 +55,7 @@ contract CowBreeding is Ownable {
     cowNumToId[_cowNum] = id;
     cowToOwner[_cowNum] = msg.sender;
     ownerCowCount[msg.sender] = ownerCowCount[msg.sender].add(1);
-    emit CowBirth(_cowNum, _cowMom, _types, _sex);
+    emit Breeding(_cowNum, _types, _sex);
   }
 
   /**

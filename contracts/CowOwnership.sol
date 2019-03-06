@@ -2,25 +2,25 @@ pragma solidity ^0.4.23;
 
 import "./CowBreeding.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
+import "openzeppelin-solidity/contracts/token/ERC721/ERC721Metadata.sol";
 
 /**
  * @title ERC721 compatible Cow Standard Basic Implementation
  * @dev Implements Cow transfer with inherited OpenZeppelin ERC721
  */
-contract CowOwnership is CowBreeding, ERC721 {
+contract CowOwnership is CowBreeding, ERC721Metadata {
 
-  using SafeMath for uint256;
-  using Address for address;
-
-  // Equals to `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
-  // which can be also obtained as `IERC721Receiver(0).onERC721Received.selector`
-  bytes4 private constant _ERC721_RECEIVED = 0x150b7a02;
+  /// @notice Name and Symbol of the NFT token
+  string private _name = "CowToken";
+  string private _symbol = "CWTK";
 
   // Mapping from token ID to approved address
   mapping (uint256 => address) private _tokenApprovals;
 
   // Mapping from owner to operator approvals
   mapping (address => mapping (address => bool)) private _operatorApprovals;
+
+  constructor() public ERC721Metadata(_name, _symbol) {}
 
   /**
    * @dev Gets the balance of the specified address
@@ -52,11 +52,17 @@ contract CowOwnership is CowBreeding, ERC721 {
    * @param _tokenId uint256 ID of the token to be approved
    */
   function approve(address _to, uint256 _tokenId) public {
+    // Only an owner can grant transfer approval
     address owner = ownerOf(_tokenId);
-    require(_to != owner);
-    require(msg.sender == owner || isApprovedForAll(owner, msg.sender));
+    // The address to be approved should not be the owner
+    require(_to != owner, "Approval to the owner is prohibited");
+    // Sender should be the owner and approved by the owner to transfer
+    require(msg.sender == owner || isApprovedForAll(owner, msg.sender), "Unpermitted approval");
 
+    // Register the approval (replacing any previous approval)
     _tokenApprovals[_tokenId] = _to;
+
+    // Emit approval event
     emit Approval(owner, _to, _tokenId);
   }
 
@@ -78,6 +84,7 @@ contract CowOwnership is CowBreeding, ERC721 {
    * @param _approved representing the status of the approval to be set
    */
   function setApprovalForAll(address _operator, bool _approved) public {
+    require(_operator != address(0), "Approval to zero address is prohibited");
     require(_operator != msg.sender);
     _operatorApprovals[msg.sender][_operator] = _approved;
     emit ApprovalForAll(msg.sender, _operator, _approved);
@@ -171,14 +178,12 @@ contract CowOwnership is CowBreeding, ERC721 {
   function _transferFrom(address _from, address _to, uint256 _tokenId) internal {
     require(ownerOf(_tokenId) ==_from);
     require(_to != address(0));
-
     _clearApproval(_tokenId);
 
     ownerCowCount[_from] = ownerCowCount[_from].sub(1);
     ownerCowCount[_to]   = ownerCowCount[_to].add(1);
 
     cowToOwner[_tokenId] = _to;
-
     emit Transfer(_from, _to, _tokenId);  
   }
 
@@ -193,21 +198,27 @@ contract CowOwnership is CowBreeding, ERC721 {
   }
 
   /**
-   * @dev Internal function to invoke `onERC721Received` on a target address
-   * The call is not executed if the target address is not a contract
-   * @param _from address representing the previous owner of the given token ID
-   * @param _to target address that will receive the tokens
-   * @param _tokenId uint256 ID of the token to be transferred
-   * @param _data bytes optional data to send along with the call
-   * @return whether the call correctly returned the expected magic value
+   * @dev Set the token URI for a given token by the owner
+   * Reverts if the token ID does not exist
+   * @param _tokenId uint256 ID of the token to set its URI
+   * @param _uri string URI to assign
    */
-  function _checkOnERC721Received(address _from, address _to, uint256 _tokenId, bytes _data) internal returns (bool) {
-    if (!_to.isContract()) {
-      return true;
-    }
+  function setTokenURI(uint256 _tokenId, string _uri) external {
+    address owner = ownerOf(_tokenId);
+    require(msg.sender == owner);
+    super._setTokenURI(_tokenId, _uri);
+  }
 
-    bytes4 retval = IERC721Receiver(_to).onERC721Received(msg.sender, _from, _tokenId, _data);
-    return (retval == _ERC721_RECEIVED);
+  /**
+   * @dev External function to burn a specific token
+   * Reverts if the token does not exist
+   * Deprecated, use _burn(uint256) instead
+   * @param _tokenId uint256 ID of the token being burned by the msg.sender
+   */
+  function burn(uint256 _tokenId) external {
+    address owner = ownerOf(_tokenId);
+    require(msg.sender == owner);
+    super._burn(owner, _tokenId);
   }
 }
 
