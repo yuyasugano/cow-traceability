@@ -153,7 +153,7 @@ App = {
         OwnershipInstance = instance;
 
         // Call a setTokenURI function relavant hashed value
-        return OwnershipInstance.setTokenURI(tokenid, url);
+        return OwnershipInstance.setTokenURI(tokenid, hash);
       }).then(function(result) {
 
         // Transaction was accepted into the blockchain, redraw the UI
