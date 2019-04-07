@@ -1,10 +1,16 @@
 App = {
   web3Provider: null,
   contracts: {},
+  ipfs: {},
 
   init: async function() {
     // Init task
+    App.initIpfs();
     return await App.initWeb3();
+  },
+
+  initIpfs: function() {
+    App.ipfs = window.IpfsApi('localhost', '5001');
   },
 
   initWeb3: async function() {
@@ -37,7 +43,7 @@ App = {
 
   bindEvents: function() {
     $(document).on('click', '.btn-submit', App.handleSubmit);
-    $(document).on('click', '.btn-transfer', App.handleTransfer);
+    $(document).on('click', '.btn-upload', App.handleUpload);
   },
 
   markRetrieved: function(cows, account) {
@@ -66,17 +72,24 @@ App = {
               // Using ES6's "template literals" to inject variables into the HTML
               // Append each one to our DOM
 
-              $("#cows").append(`
-                <div class="card mb-3">
-                  <div class="card-block">
-                    <h4 class="card-title">${cow[3]} ${cow[0].c}</h4>
-                    <h6 class="card-subtitle mb-2 text-muted">Birth: ${cow[2].c}</h6>
-                    <p class="card-text">${cow[3]} ${cow[0].c} (${cow[4]}) was born from ${cow[1].c} on ${cow[2].c}.</p>
-                    <p class="card-text"><small class="text-muted">Last updated 3 months ago</small></p>
+              OwnershipInstance.tokenURI(cow[0].c).then(function(hash) {
+                var url  = "https://ipfs.io/ipfs/" + hash;
+
+                $("#cows").append(`
+                  <div class="card img-thumbnail mb-3">
+                    <img class="card-img-top" src=${url} alt="example" width="100%" height="100%">
+                    <div class="card-block">
+                      <h4 class="card-title">${cow[3]} ${cow[0].c}</h4>
+                      <h6 class="card-subtitle mb-2 text-muted">Birth: ${cow[2].c}</h6>
+                      <p class="card-text">${cow[3]} ${cow[0].c} (${cow[4]}) was born from ${cow[1].c} on ${cow[2].c}.</p>
+                      <p class="card-text"><small class="text-muted">Last updated 3 months ago</small></p>
+                    </div>
                   </div>
                 </div>
-              </div>
-              `);
+                `);
+              }).catch(function(error) {
+                $("#txStatus").text(error).show();
+              });
             });
           });
         }
@@ -118,8 +131,39 @@ App = {
     });
   },
 
-  handleTransfer: function(event) {
+  handleUpload: function(event) {
     event.preventDefault();
+
+    var tokenid = $('input:text[name="tokenid"]').val();
+    var reader  = new window.FileReader();
+    return App.saveIpfs(reader, tokenid);
+  },
+
+  saveIpfs: function(reader, tokenid) {
+    var buf = buffer.Buffer(reader.result);
+    App.ipfs.files.add(buf, function(error, result) {
+      if (error) {
+        console.log(error);
+        return;
+      }
+      var OwnershipInstance;
+      var hash = result[0].hash;
+      var url = "https://ipfs.io/ipfs/" + hash;
+      App.contracts.CowOwnership.deployed().then(function(instance) {
+        OwnershipInstance = instance;
+
+        // Call a setTokenURI function relavant hashed value
+        return OwnershipInstance.setTokenURI(tokenid, url);
+      }).then(function(result) {
+
+        // Transaction was accepted into the blockchain, redraw the UI
+        $("#txStatus").text("Successfully uploaded " + tokenid + " !").show();
+        return App.markRetrieved();
+      }).catch(function(error) {
+        // Transaction returned with an error
+        $("#txStatus").text(error).show();
+      });
+    });
   }
 };
 
